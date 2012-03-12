@@ -26,6 +26,10 @@ To install this package run on a fresh ubuntu 11.04 system:
   make
   sudo make install
 
+Make sure you have run 'sudo sensors-detect' or otherwise configured
+lm-sensors. You can test your lm-sensors configuration by running
+'sensors'.
+
 
 USAGE
 =====

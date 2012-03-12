@@ -10,3 +10,10 @@ clean:
 
 install: 
 	cp sensors.so /usr/lib/lxpanel/plugins
+
+package:
+	rm -Rf sensors-lxpanel-plugin-1.0
+	mkdir sensors-lxpanel-plugin-1.0
+	cp README Makefile sensors.c sensors-lxpanel-plugin-1.0
+	tar czvf sensors-lxpanel-plugin-1.0.tar.gz sensors-lxpanel-plugin-1.0
+	rm -Rf sensors-lxpanel-plugin-1.0
