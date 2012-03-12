@@ -1,0 +1,54 @@
+PACKAGE INFORMATION
+===================
+
+A lxpanel plugin to monitor hardware sensors through lm-sensors.
+
+
+DEPENDENCIES
+============
+
+This package uses several other packages:
+  lxpanel
+  pkg-config
+  libglib2.0-dev
+  libgtk2.0-dev
+  libsensors4-dev
+  libmenu-cache1-dev
+
+
+INSTALLATION
+============
+
+To install this package run on a fresh ubuntu 11.04 system:
+  sudo apt-get install build-essential lxde
+  sudo apt-get install libglib2.0-dev libgtk2.0-dev libmenu-cache1-dev 
+  sudo apt-get install libsensors4-dev
+  make
+  sudo make install
+
+
+USAGE
+=====
+
+Once installed, follow these steps to add the plugin:
+  Right-click panel
+  Select "Add / Remove Panel Items"
+  Press "Add"
+  Select and add "lm-sensors Monitor"
+  Right-click plugin to change settings
+
+To monitor multiple sensors, add multiple sensors plugins.
+
+AUTHOR INFORMATION
+==================
+
+Author: Dan Amlund Thomsen
+Email: dan@danamlund.dk
+Website: http://danamlund.dk/sensors_lxpanel_plugin
+
+
+CHANGELOG
+=========
+
+1.0 (2012-03-12)
+  Initial release
