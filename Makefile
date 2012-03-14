@@ -9,8 +9,17 @@ clean:
 	rm -f sensors.so
 
 install: 
-	mkdir -p /usr/lib/lxpanel/plugins
-	cp sensors.so /usr/lib/lxpanel/plugins
+	if [ -d "/usr/lib/lxpanel/plugins" ]; then \
+	  cp sensors.so /usr/lib/lxpanel/plugins; \
+	elif [ -d "/usr/lib64/lxpanel/plugins" ]; then \
+	  cp sensors.so /usr/lib64/lxpanel/plugins; \
+	else \
+	  echo ;\
+	  echo Couldn\'t find lxpanel/plugins directory.; \
+	  echo Checked /usr/lib/lxpanel/plugins and /usr/lib64/lxpanel/plugins; \
+	  echo Find it yourself by running \'locate deskno.so\'; \
+	  echo Then copy sensors.so to that directory.; \
+	fi
 
 package:
 	rm -Rf sensors-lxpanel-plugin-1.0
