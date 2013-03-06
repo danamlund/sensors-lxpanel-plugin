@@ -80,5 +80,3 @@ CHANGELOG
 1.1 (2013-03-06) 
   Widget size is kept as the maximum seen to avoid jiggling other
   plugins. Widget size can be reset by entering the configuration.
-
-
