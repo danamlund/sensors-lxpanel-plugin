@@ -50,6 +50,7 @@ typedef struct {
   const sensors_chip_name *chip;
   const sensors_feature *feature;
   int chip_nr, feature_nr, in_fahrenheit, hide_unit;
+  int max_display_length_seen;
   char *col_normal_str, *col_warning_str, *col_critical_str;
   GdkColor col_normal, col_warning, col_critical;
   unsigned int timer;
@@ -295,7 +296,20 @@ static char* get_sensor_string(const sensors_chip_name *chip,
 
 static int update_display(SensorsPlugin *sp) {
   char *str = sensor_reading(sp->chip, sp->feature, sp);
+  int len = strlen(str);
+  char doSetSize = 0;
+  if (len > sp->max_display_length_seen) {
+    sp->max_display_length_seen = len;
+    gtk_widget_set_size_request(GTK_WIDGET(sp->label), -1, -1);
+    doSetSize = 1;
+  }
   gtk_label_set_markup(GTK_LABEL(sp->label), str);
+  if (doSetSize) {
+    GtkRequisition size;
+    gtk_widget_size_request(GTK_WIDGET(sp->label), &size); 
+    gtk_widget_set_size_request(GTK_WIDGET(sp->label),
+                                size.width, -1);
+  }
   free(str);
   return 1;
 }
@@ -356,6 +370,8 @@ static int sensors_constructor(Plugin * p, char ** fp) {
 
   GtkWidget *label = gtk_label_new("..");
   sp->label = label;
+  // Align top, right
+  gtk_misc_set_alignment(GTK_MISC(sp->label), 1, 0);
   p->pwid = gtk_event_box_new();
   gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 3);
   gtk_container_add(GTK_CONTAINER(p->pwid), GTK_WIDGET(label));
@@ -456,6 +472,9 @@ static void sensors_configure(Plugin * p, GtkWindow * parent) {
 
   gtk_widget_show_all(dialog);
   gtk_window_present(GTK_WINDOW(dialog));
+
+  // reset text max-width
+  gtk_widget_set_size_request(GTK_WIDGET(sp->label), -1, -1);
 }
 
 static void sensors_save_configuration(Plugin * p, FILE * fp) {

@@ -1,3 +1,5 @@
+VERSION=1.1
+
 all: sensors.so
 
 sensors.so: sensors.c
@@ -22,8 +24,9 @@ install:
 	fi
 
 package:
-	rm -Rf sensors-lxpanel-plugin-1.0
-	mkdir sensors-lxpanel-plugin-1.0
-	cp README Makefile sensors.c sensors-lxpanel-plugin-1.0
-	tar czvf sensors-lxpanel-plugin-1.0.tar.gz sensors-lxpanel-plugin-1.0
-	rm -Rf sensors-lxpanel-plugin-1.0
+	rm -Rf sensors-lxpanel-plugin-${VERSION}
+	mkdir sensors-lxpanel-plugin-${VERSION}
+	cp README Makefile sensors.c sensors-lxpanel-plugin-${VERSION}
+	tar czvf sensors-lxpanel-plugin-${VERSION}.tar.gz \
+		 sensors-lxpanel-plugin-${VERSION}
+	rm -Rf sensors-lxpanel-plugin-${VERSION}
