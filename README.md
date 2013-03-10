@@ -80,3 +80,8 @@ CHANGELOG
 1.1 (2013-03-06) 
   Widget size is kept as the maximum seen to avoid jiggling other
   plugins. Widget size can be reset by entering the configuration.
+
+1.2 (2013-03-10)
+  Text is now aligned to the right in the x-coordinate and in the
+  center on the y-coordinate. The text is now customizable using html
+  markup.

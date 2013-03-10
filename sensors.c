@@ -19,6 +19,8 @@
  *
  */
 
+/* version 1.2 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -46,13 +48,16 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 /* from lxpanel-0.5.8/src/misc.h */
 guint32 gcolor2rgb24(GdkColor *color);
 
+#define STR_BAD_FORMAT "<span color=\"#FFFFFF\"><b>Bad formatting (%s)</b></span>"
+
 typedef struct {
   const sensors_chip_name *chip;
   const sensors_feature *feature;
   int chip_nr, feature_nr, in_fahrenheit, hide_unit;
   int max_display_length_seen;
-  char *col_normal_str, *col_warning_str, *col_critical_str;
-  GdkColor col_normal, col_warning, col_critical;
+  char *format_normal_str, *format_warning_str, *format_critical_str;
+  char *format_normal_str_shown, *format_warning_str_shown, 
+    *format_critical_str_shown;
   unsigned int timer;
   GtkWidget *label;
   GtkComboBox *combo_box;
@@ -164,7 +169,7 @@ static char* sensor_reading(const sensors_chip_name *chip,
                             SensorsPlugin *sp) {
   char out[256], out0[256];
   out[0] = out0[0] = '\0';
-  GdkColor color;
+  char *format = STR_BAD_FORMAT;
 
   char error[] = "read-error";
 
@@ -191,8 +196,8 @@ static char* sensor_reading(const sensors_chip_name *chip,
     }
 
     if (sp != NULL) {
-      color = (((!isnan(max) && volt >= max) || (!isnan(min) && volt <= min)) 
-               ? sp->col_normal : sp->col_critical);
+      format = (((!isnan(max) && volt >= max) || (!isnan(min) && volt <= min)) 
+               ? sp->format_normal_str_shown : sp->format_critical_str_shown);
       sprintf(out, "%.2lf%s", volt, (sp->hide_unit ? "" : " V"));
     } else {
       sprintf(out, "%.2lf V", volt);
@@ -219,11 +224,11 @@ static char* sensor_reading(const sensors_chip_name *chip,
     }
 
     if (sp != NULL) {
-      color = sp->col_normal;
+      format = sp->format_normal_str_shown;
       if (!isnan(crit) && temp >= crit)
-        color = sp->col_critical;
+        format = sp->format_critical_str_shown;
       else if (!isnan(max) && temp >= max)
-        color = sp->col_warning;
+        format = sp->format_warning_str_shown;
 
       sprintf(out, "%.1lf%s", 
               (sp->in_fahrenheit ? deg_ctof(temp) : temp),
@@ -250,7 +255,7 @@ static char* sensor_reading(const sensors_chip_name *chip,
       goto end_of_func;
     }
     if (sp != NULL) {
-      color = sp->col_normal;
+      format = sp->format_normal_str_shown;
       sprintf(out, "%.0lf%s", rpm, (sp->hide_unit ? "" : " RPM"));
     } else
       sprintf(out, "%.0lf RPM", rpm);
@@ -275,8 +280,7 @@ static char* sensor_reading(const sensors_chip_name *chip,
   
   if (sp != NULL) {
     strcpy(out0, out);
-    sprintf(out, "<span color=\"#%06x\"><b>%s</b></span>", 
-            gcolor2rgb24(&color), out0);
+    sprintf(out, format, out0);
   }
 
   return strndup(out, 256);
@@ -314,6 +318,20 @@ static int update_display(SensorsPlugin *sp) {
   return 1;
 }
 
+static char* get_valid_format(char *str) {
+  int i;
+  char seen = 0;
+  for (i = 0; str[i] != '\0'; i++) {
+    const char c = str[i];
+    if (c == '%' && (i == 0 || str[i - 1] != '%')) {
+      if (seen || str[i+1] != 's')
+          return STR_BAD_FORMAT;
+      seen = 1;
+    }
+  }
+  return seen ? str : STR_BAD_FORMAT;
+}
+
 static int sensors_constructor(Plugin * p, char ** fp) {
   SensorsPlugin *sp = g_new0(SensorsPlugin, 1);
 
@@ -334,26 +352,27 @@ static int sensors_constructor(Plugin * p, char ** fp) {
           sp->in_fahrenheit = atoi(s.t[1]);
         else if (g_ascii_strcasecmp(s.t[0], "HideUnit") == 0)
           sp->hide_unit = atoi(s.t[1]);
-        else if (g_ascii_strcasecmp(s.t[0], "ColorNormal") == 0)
-          sp->col_normal_str = g_strdup(s.t[1]);
-        else if (g_ascii_strcasecmp(s.t[0], "ColorWarning") == 0)
-          sp->col_warning_str = g_strdup(s.t[1]);
-        else if (g_ascii_strcasecmp(s.t[0], "ColorCritical") == 0)
-          sp->col_critical_str = g_strdup(s.t[1]);
+        else if (g_ascii_strcasecmp(s.t[0], "FormatNormal") == 0)
+          sp->format_normal_str = g_strdup(s.t[1]);
+        else if (g_ascii_strcasecmp(s.t[0], "FormatWarning") == 0)
+          sp->format_warning_str = g_strdup(s.t[1]);
+        else if (g_ascii_strcasecmp(s.t[0], "FormatCritical") == 0)
+          sp->format_critical_str = g_strdup(s.t[1]);
       }
     }
   }
 
-  if (sp->col_normal_str == NULL)
-    sp->col_normal_str = g_strdup("white");
-  if (sp->col_warning_str == NULL)
-    sp->col_warning_str = g_strdup("yellow");
-  if (sp->col_critical_str == NULL)
-    sp->col_critical_str = g_strdup("red");
+  if (sp->format_normal_str == NULL)
+    sp->format_normal_str = g_strdup("<span color=\"#FFFFFF\"><b>%s</b></span>");
+  if (sp->format_warning_str == NULL)
+    sp->format_warning_str = g_strdup("<span color=\"#FFFF00\"><b>%s</b></span>");
+  if (sp->format_critical_str == NULL)
+    sp->format_critical_str = 
+      g_strdup("<span color=\"#FF0000\"><b><big>%s</big></b></span>");
 
-  gdk_color_parse(sp->col_normal_str, &sp->col_normal);
-  gdk_color_parse(sp->col_warning_str, &sp->col_warning);
-  gdk_color_parse(sp->col_critical_str, &sp->col_critical);
+  sp->format_normal_str_shown = get_valid_format(sp->format_normal_str);
+  sp->format_warning_str_shown = get_valid_format(sp->format_warning_str);
+  sp->format_critical_str_shown = get_valid_format(sp->format_critical_str);
 
   if (sensors_plugins_running == 0)
     sensors_init(NULL);
@@ -370,8 +389,8 @@ static int sensors_constructor(Plugin * p, char ** fp) {
 
   GtkWidget *label = gtk_label_new("..");
   sp->label = label;
-  // Align top, right
-  gtk_misc_set_alignment(GTK_MISC(sp->label), 1, 0);
+  // Align x=right, y=middle
+  gtk_misc_set_alignment(GTK_MISC(sp->label), 1.0, 0.5);
   p->pwid = gtk_event_box_new();
   gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 3);
   gtk_container_add(GTK_CONTAINER(p->pwid), GTK_WIDGET(label));
@@ -387,9 +406,9 @@ static int sensors_constructor(Plugin * p, char ** fp) {
 static void sensors_destructor(Plugin * p) {
   SensorsPlugin *sp = p->priv;
   g_source_remove(sp->timer);
-  g_free(sp->col_normal_str);
-  g_free(sp->col_warning_str);
-  g_free(sp->col_critical_str);
+  g_free(sp->format_normal_str);
+  g_free(sp->format_warning_str);
+  g_free(sp->format_critical_str);
   g_free(sp);
 
   sensors_plugins_running--;
@@ -423,9 +442,9 @@ static void sensors_sensor_changed(GtkComboBox * cb, gpointer * data) {
 static void sensors_apply_configure(Plugin* p) {
   SensorsPlugin *sp = (SensorsPlugin *) p->priv;
 
-  gdk_color_parse(sp->col_normal_str, &sp->col_normal);
-  gdk_color_parse(sp->col_warning_str, &sp->col_warning);
-  gdk_color_parse(sp->col_critical_str, &sp->col_critical);
+  sp->format_normal_str_shown = get_valid_format(sp->format_normal_str);
+  sp->format_warning_str_shown = get_valid_format(sp->format_warning_str);
+  sp->format_critical_str_shown = get_valid_format(sp->format_critical_str);
 }
 
 static void sensors_configure(Plugin * p, GtkWindow * parent) {
@@ -437,9 +456,9 @@ static void sensors_configure(Plugin * p, GtkWindow * parent) {
      (GSourceFunc) sensors_apply_configure, (gpointer) p,
      _("In Fahrenheit"), &sp->in_fahrenheit, CONF_TYPE_BOOL,
      _("Hide unit"), &sp->hide_unit, CONF_TYPE_BOOL,
-     _("Normal text color"), &sp->col_normal_str, CONF_TYPE_STR,
-     _("Warning text color"), &sp->col_warning_str, CONF_TYPE_STR,
-     _("Critical text color"), &sp->col_critical_str, CONF_TYPE_STR,
+     _("Normal text"), &sp->format_normal_str, CONF_TYPE_STR,
+     _("Warning text"), &sp->format_warning_str, CONF_TYPE_STR,
+     _("Critical text"), &sp->format_critical_str, CONF_TYPE_STR,
      NULL);
 
   GtkWidget * hbox = gtk_hbox_new(FALSE, 2);
@@ -483,9 +502,9 @@ static void sensors_save_configuration(Plugin * p, FILE * fp) {
   lxpanel_put_int(fp, "FeatureNr", sp->feature_nr);
   lxpanel_put_int(fp, "Fahrenheit", sp->in_fahrenheit);
   lxpanel_put_int(fp, "HideUnit", sp->hide_unit);
-  lxpanel_put_str(fp, "ColorNormal", sp->col_normal_str);
-  lxpanel_put_str(fp, "ColorWarning", sp->col_warning_str);
-  lxpanel_put_str(fp, "ColorCritical", sp->col_critical_str);
+  lxpanel_put_str(fp, "FormatNormal", sp->format_normal_str);
+  lxpanel_put_str(fp, "FormatWarning", sp->format_warning_str);
+  lxpanel_put_str(fp, "FormatCritical", sp->format_critical_str);
 }
 
 PluginClass sensors_plugin_class = {
