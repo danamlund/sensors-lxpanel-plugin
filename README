@@ -38,8 +38,8 @@ To install this package run on a fresh ubuntu 11.04 system:
   sudo make install
 
 To install in Funtoo/Gentoo:
-  See Tutu Yakubu's installer at:
-    https://github.com/yuyuyak/sensors-lxpanel-plugin-ebuild
+  Available in the Flora overlay repository or directly from:
+    https://github.com/funtoo/flora/tree/master/lxde-base/sensors-lxpanel-plugin
 
 On debian (and possible other systems) the package 'lxpanel-dev' is
 also needed: 
