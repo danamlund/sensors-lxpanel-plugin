@@ -1,4 +1,4 @@
-VERSION=1.2
+VERSION=1.3
 
 all: sensors.so
 
@@ -11,7 +11,9 @@ clean:
 	rm -f sensors.so
 
 install: 
-	if [ -d "/usr/lib/lxpanel/plugins" ]; then \
+	if [ "$(DESTDIR)" ]; then \
+	  cp sensors.so $(DESTDIR); \
+	elif [ -d "/usr/lib/lxpanel/plugins" ]; then \
 	  cp sensors.so /usr/lib/lxpanel/plugins; \
 	elif [ -d "/usr/lib64/lxpanel/plugins" ]; then \
 	  cp sensors.so /usr/lib64/lxpanel/plugins; \
@@ -26,7 +28,7 @@ install:
 package:
 	rm -Rf sensors-lxpanel-plugin-${VERSION}
 	mkdir sensors-lxpanel-plugin-${VERSION}
-	cp README Makefile sensors.c sensors-lxpanel-plugin-${VERSION}
+	cp README Makefile sensors.c COPYING sensors-lxpanel-plugin-${VERSION}
 	tar czvf sensors-lxpanel-plugin-${VERSION}.tar.gz \
 		 sensors-lxpanel-plugin-${VERSION}
 	rm -Rf sensors-lxpanel-plugin-${VERSION}
