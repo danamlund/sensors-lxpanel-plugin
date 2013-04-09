@@ -41,6 +41,10 @@ To install in Funtoo/Gentoo:
   Available in the Flora overlay repository or directly from:
     https://github.com/funtoo/flora/tree/master/lxde-base/sensors-lxpanel-plugin
 
+To install in Fedora:
+  Available as an rpm from:
+    http://koji.russianfedora.ru/koji/packageinfo?packageID=332
+
 On debian (and possible other systems) the package 'lxpanel-dev' is
 also needed: 
   sudo apt-get install lxpanel-dev
