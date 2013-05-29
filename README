@@ -37,6 +37,10 @@ To install this package run on a fresh ubuntu 11.04 system:
   make
   sudo make install
 
+To install in Arch Linux
+  Available PKGBUILD in the AUR:
+    https://aur.archlinux.org/packages/sensors-lxpanel-plugin
+
 To install in Funtoo/Gentoo:
   Available in the Flora overlay repository or directly from:
     https://github.com/funtoo/flora/tree/master/lxde-base/sensors-lxpanel-plugin
