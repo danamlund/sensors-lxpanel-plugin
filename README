@@ -93,3 +93,11 @@ CHANGELOG
   Text is now aligned to the right in the x-coordinate and in the
   center on the y-coordinate. The text is now customizable using html
   markup.
+
+1.3 (2013-04-08)
+  Added the gpl2 license COPYING file to the repository.
+
+1.4 (2013-05-29) 
+  The default delay of 1 second can now be changed (to a minimum of 10
+  ms). Also, easy Arch Linux installation instructions added by
+  graysky2.

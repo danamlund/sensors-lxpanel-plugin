@@ -1,4 +1,4 @@
-VERSION=1.3
+VERSION=1.4
 
 all: sensors.so
 
@@ -11,12 +11,12 @@ clean:
 	rm -f sensors.so
 
 install: 
-	if [ "$(DESTDIR)" ]; then \
-	  cp sensors.so $(DESTDIR); \
+	@ if [ "$(DESTDIR)" ]; then \
+	  cp -v sensors.so $(DESTDIR); \
 	elif [ -d "/usr/lib/lxpanel/plugins" ]; then \
-	  cp sensors.so /usr/lib/lxpanel/plugins; \
+	  cp -v sensors.so /usr/lib/lxpanel/plugins; \
 	elif [ -d "/usr/lib64/lxpanel/plugins" ]; then \
-	  cp sensors.so /usr/lib64/lxpanel/plugins; \
+	  cp -v sensors.so /usr/lib64/lxpanel/plugins; \
 	else \
 	  echo ;\
 	  echo Couldn\'t find lxpanel/plugins directory.; \

@@ -58,6 +58,8 @@ typedef struct {
   char *format_normal_str, *format_warning_str, *format_critical_str;
   char *format_normal_str_shown, *format_warning_str_shown, 
     *format_critical_str_shown;
+  char *delay_in_ms_str;
+  int delay_in_ms;
   unsigned int timer;
   GtkWidget *label;
   GtkComboBox *combo_box;
@@ -332,6 +334,31 @@ static char* get_valid_format(char *str) {
   return seen ? str : STR_BAD_FORMAT;
 }
 
+static void set_delay_in_ms_str(SensorsPlugin * sp) {
+  free(sp->delay_in_ms_str);
+  sp->delay_in_ms_str = malloc(8);
+  snprintf(sp->delay_in_ms_str, 8, "%d", sp->delay_in_ms);
+}
+
+static void update_timer(SensorsPlugin * sp) {
+  if (sp->delay_in_ms_str != NULL)
+    sp->delay_in_ms = atoi(sp->delay_in_ms_str);
+  if (sp->timer != 0) {
+    g_source_remove(sp->timer);
+  }
+  if (sp->delay_in_ms <= 10) {
+    sp->delay_in_ms = 1000;
+    set_delay_in_ms_str(sp);
+  }
+  if (sp->delay_in_ms > 2000 || sp->delay_in_ms % 1000 == 0)
+    sp->timer = g_timeout_add_seconds(sp->delay_in_ms / 1000, 
+                                      (GSourceFunc) update_display,
+                                      (gpointer) sp);
+  else
+    sp->timer= g_timeout_add(sp->delay_in_ms, 
+                             (GSourceFunc) update_display, (gpointer) sp);
+}
+
 static int sensors_constructor(Plugin * p, char ** fp) {
   SensorsPlugin *sp = g_new0(SensorsPlugin, 1);
 
@@ -358,6 +385,8 @@ static int sensors_constructor(Plugin * p, char ** fp) {
           sp->format_warning_str = g_strdup(s.t[1]);
         else if (g_ascii_strcasecmp(s.t[0], "FormatCritical") == 0)
           sp->format_critical_str = g_strdup(s.t[1]);
+        else if (g_ascii_strcasecmp(s.t[0], "DelayInMs") == 0)
+          sp->delay_in_ms = atoi(s.t[1]);
       }
     }
   }
@@ -369,6 +398,10 @@ static int sensors_constructor(Plugin * p, char ** fp) {
   if (sp->format_critical_str == NULL)
     sp->format_critical_str = 
       g_strdup("<span color=\"#FF0000\"><b><big>%s</big></b></span>");
+
+  if (sp->delay_in_ms == 0)
+    sp->delay_in_ms = 1000;
+  set_delay_in_ms_str(sp);
 
   sp->format_normal_str_shown = get_valid_format(sp->format_normal_str);
   sp->format_warning_str_shown = get_valid_format(sp->format_warning_str);
@@ -399,7 +432,8 @@ static int sensors_constructor(Plugin * p, char ** fp) {
                     G_CALLBACK (plugin_button_press_event), (gpointer) p);
   gtk_widget_show_all(p->pwid);
   update_display(sp);
-  sp->timer = g_timeout_add(1000, (GSourceFunc) update_display, (gpointer) sp);
+
+  update_timer(sp);
   return 1;
 }
 
@@ -409,6 +443,7 @@ static void sensors_destructor(Plugin * p) {
   g_free(sp->format_normal_str);
   g_free(sp->format_warning_str);
   g_free(sp->format_critical_str);
+  free(sp->delay_in_ms_str);
   g_free(sp);
 
   sensors_plugins_running--;
@@ -445,11 +480,14 @@ static void sensors_apply_configure(Plugin* p) {
   sp->format_normal_str_shown = get_valid_format(sp->format_normal_str);
   sp->format_warning_str_shown = get_valid_format(sp->format_warning_str);
   sp->format_critical_str_shown = get_valid_format(sp->format_critical_str);
+
+  update_timer(sp);
 }
 
 static void sensors_configure(Plugin * p, GtkWindow * parent) {
   GtkWidget *dialog;
   SensorsPlugin *sp = (SensorsPlugin *) p->priv;
+
   dialog = create_generic_config_dlg
     (_(p->class->name),
      GTK_WIDGET(parent),
@@ -459,6 +497,7 @@ static void sensors_configure(Plugin * p, GtkWindow * parent) {
      _("Normal text"), &sp->format_normal_str, CONF_TYPE_STR,
      _("Warning text"), &sp->format_warning_str, CONF_TYPE_STR,
      _("Critical text"), &sp->format_critical_str, CONF_TYPE_STR,
+     _("Delay in ms"), &sp->delay_in_ms_str, CONF_TYPE_STR,
      NULL);
 
   GtkWidget * hbox = gtk_hbox_new(FALSE, 2);
@@ -505,6 +544,7 @@ static void sensors_save_configuration(Plugin * p, FILE * fp) {
   lxpanel_put_str(fp, "FormatNormal", sp->format_normal_str);
   lxpanel_put_str(fp, "FormatWarning", sp->format_warning_str);
   lxpanel_put_str(fp, "FormatCritical", sp->format_critical_str);
+  lxpanel_put_int(fp, "DelayInMs", sp->delay_in_ms);
 }
 
 PluginClass sensors_plugin_class = {
