@@ -17,10 +17,16 @@ install:
 	  cp -v sensors.so /usr/lib/lxpanel/plugins; \
 	elif [ -d "/usr/lib64/lxpanel/plugins" ]; then \
 	  cp -v sensors.so /usr/lib64/lxpanel/plugins; \
+	elif [ -d "/usr/lib/i386-linux-gnu/lxpanel/plugins" ]; then \
+	  cp -v $(FILE) /usr/lib/i386-linux-gnu/lxpanel/plugins; \
+	elif [ -d "/usr/lib64/i386-linux-gnu/lxpanel/plugins" ]; then \
+	  cp -v $(FILE) /usr/lib64/i386-linux-gnu/lxpanel/plugins; \
 	else \
 	  echo ;\
 	  echo Couldn\'t find lxpanel/plugins directory.; \
 	  echo Checked /usr/lib/lxpanel/plugins and /usr/lib64/lxpanel/plugins; \
+	  echo and /usr/lib/i386-linux-gnu/lxpanel/plugins; \
+	  echo and /usr/lib64/i386-linux-gnu/lxpanel/plugins.; \
 	  echo Find it yourself by running \'locate deskno.so\'; \
 	  echo Then copy sensors.so to that directory.; \
 	fi
