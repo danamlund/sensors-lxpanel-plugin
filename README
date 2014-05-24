@@ -112,3 +112,13 @@ CHANGELOG
   (3) Improved installation script by trying all sorts of methods to
   locate lxpanel/plugins (try 'pkg-control lxpanel', search for
   deskno.so (a built-in plugin) in various common lib folders).
+
+1.6 (2014-05-24)
+  'make DESTDIR=/tmp/stage install' is now supported to prepend
+  "/tmp/stage" to where it would otherwise install the plugin.
+  'make LXPANEL_PLUGINS_DIR=/usr/lib/lxpanel/plugins install' installs
+  the plugin (copied sensors.co) into '/usr/lib/lxpanel/plugins'.
+  Version 1.4 handled DESTDIR like LXPANEL_PLUGINS_DIR is handled
+  now. DESTDIR now follows the standard (from
+  https://www.gnu.org/prep/standards/html_node/DESTDIR.html ).
+  My thanks to https://github.com/rikardfalkeborn for these fixes.

@@ -3,6 +3,20 @@
 PLUGIN_NAME="sensors.so"
 EXISTING_LXPANEL_PLUGIN="deskno.so"
 
+if [ ! -e $PLUGIN_NAME ]
+then
+    echo Could not find $PLUGIN_NAME, call make.
+    exit 1
+fi
+
+# The user can set LXPANEL_PLUGINS_DIR to simply install to that directory
+# e.g. export LXPANEL_PLUGINS_DIR=/usr/lib/lxpanel/plugins
+if [ "$LXPANEL_PLUGINS_DIR" ]
+then
+    cp -v ${PLUGIN_NAME} "$LXPANEL_PLUGINS_DIR"
+    exit 0
+fi
+
 check_results() {
     RESULTS="$@"
 
@@ -63,17 +77,12 @@ find_install_path() {
 }
 
 
-if [ ! -e $PLUGIN_NAME ]
-then
-    echo Could not find $PLUGIN_NAME, call make.
-    exit 1
-fi
-
-INSTALLPATH=$( find_install_path )
+INSTALLPATH_OR_ERROR=$( find_install_path )
 
 if [ $? -eq 0 ]
 then
-    cp -v ${PLUGIN_NAME} ${INSTALLPATH}
+    mkdir -p "${DESTDIR}${INSTALLPATH_OR_ERROR}"
+    cp -v ${PLUGIN_NAME} "${DESTDIR}${INSTALLPATH_OR_ERROR}"
 else
-    echo "${INSTALLPATH}"
+    echo "${INSTALLPATH_OR_ERROR}"
 fi
