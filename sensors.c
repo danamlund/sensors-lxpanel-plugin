@@ -19,8 +19,6 @@
  *
  */
 
-/* version 1.2 */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -33,7 +31,7 @@
 
 #include <sensors/sensors.h>
 
-#include <lxpanel/plugin.h>
+#include "lxpanel/plugin.h"
 
 
 /* from lxpanel-0.5.8/src/plugin.h */

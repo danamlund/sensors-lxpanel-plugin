@@ -1,40 +1,28 @@
-VERSION=1.4
+VERSION=1.5
+NAME=sensors-lxpanel-plugin
+INPUT=sensors.c
+OUTPUT=sensors.so
 
-all: sensors.so
+all: ${OUTPUT}
 
-sensors.so: sensors.c
-	gcc -O2 -Wall `pkg-config --cflags lxpanel gtk+-2.0` \
-	-shared -fPIC sensors.c -lsensors -o sensors.so \
-	`pkg-config --libs lxpanel gtk+-2.0`
+${OUTPUT}: ${INPUT}
+	./check_required.sh
+	gcc -O2 -Wall `pkg-config --cflags glib-2.0 gtk+-2.0` \
+	    -shared -fPIC ${INPUT} -lsensors -o ${OUTPUT} \
+	    `pkg-config --libs glib-2.0 gtk+-2.0`
 
 clean:
-	rm -f sensors.so
+	rm -f ${OUTPUT}
 
-install: 
-	@ if [ "$(DESTDIR)" ]; then \
-	  cp -v sensors.so $(DESTDIR); \
-	elif [ -d "/usr/lib/lxpanel/plugins" ]; then \
-	  cp -v sensors.so /usr/lib/lxpanel/plugins; \
-	elif [ -d "/usr/lib64/lxpanel/plugins" ]; then \
-	  cp -v sensors.so /usr/lib64/lxpanel/plugins; \
-	elif [ -d "/usr/lib/i386-linux-gnu/lxpanel/plugins" ]; then \
-	  cp -v $(FILE) /usr/lib/i386-linux-gnu/lxpanel/plugins; \
-	elif [ -d "/usr/lib64/i386-linux-gnu/lxpanel/plugins" ]; then \
-	  cp -v $(FILE) /usr/lib64/i386-linux-gnu/lxpanel/plugins; \
-	else \
-	  echo ;\
-	  echo Couldn\'t find lxpanel/plugins directory.; \
-	  echo Checked /usr/lib/lxpanel/plugins and /usr/lib64/lxpanel/plugins; \
-	  echo and /usr/lib/i386-linux-gnu/lxpanel/plugins; \
-	  echo and /usr/lib64/i386-linux-gnu/lxpanel/plugins.; \
-	  echo Find it yourself by running \'locate deskno.so\'; \
-	  echo Then copy sensors.so to that directory.; \
-	fi
+install: sensors.so
+	./install.sh
 
 package:
-	rm -Rf sensors-lxpanel-plugin-${VERSION}
-	mkdir sensors-lxpanel-plugin-${VERSION}
-	cp README Makefile sensors.c COPYING sensors-lxpanel-plugin-${VERSION}
-	tar czvf sensors-lxpanel-plugin-${VERSION}.tar.gz \
-		 sensors-lxpanel-plugin-${VERSION}
-	rm -Rf sensors-lxpanel-plugin-${VERSION}
+	rm -Rf ${NAME}-${VERSION}
+	mkdir ${NAME}-${VERSION}
+	cp -Rf README Makefile ${INPUT} COPYING check_required.sh \
+               install.sh lxpanel \
+               ${NAME}-${VERSION}
+	tar czvf ${NAME}-${VERSION}.tar.gz \
+		 ${NAME}-${VERSION}
+	rm -Rf ${NAME}-${VERSION}

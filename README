@@ -10,20 +10,15 @@ DEPENDENCIES
 This package uses several other packages with different names
 depending on distribution.
 
-For Ubuntu 11.04:
-  lxpanel
+For Ubuntu 14.04:
   pkg-config
   libglib2.0-dev
   libgtk2.0-dev
   libsensors4-dev
   libmenu-cache1-dev
 
-For Debian systems the additional package is needed:
-  lxpanel-dev
-
 For Fedora 16:
   lm_sensors-devel
-  lxpanel-devel
   gtk2-devel
 
 
@@ -32,6 +27,12 @@ INSTALLATION
 
 To install this package run on a fresh ubuntu 11.04 system:
   sudo apt-get install build-essential lxde
+  sudo apt-get install libglib2.0-dev libgtk2.0-dev libmenu-cache1-dev 
+  sudo apt-get install libsensors4-dev
+  make
+  sudo make install
+
+To install this package run on a fresh ubuntu 14.04 system:
   sudo apt-get install libglib2.0-dev libgtk2.0-dev libmenu-cache1-dev 
   sudo apt-get install libsensors4-dev
   make
@@ -101,3 +102,13 @@ CHANGELOG
   The default delay of 1 second can now be changed (to a minimum of 10
   ms). Also, easy Arch Linux installation instructions added by
   graysky2.
+
+1.5 (2014-05-24) 
+  (1) Fixed compilation problems on Ubuntu 14.04 by properly depending
+  on glib. 
+  (2) on Removed dependency on lxpanel-dev package (because it is not
+  available on Ubuntu 14.04), the required lxpanel/plugin.h is now
+  packaged along side. 
+  (3) Improved installation script by trying all sorts of methods to
+  locate lxpanel/plugins (try 'pkg-control lxpanel', search for
+  deskno.so (a built-in plugin) in various common lib folders).
