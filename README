@@ -122,3 +122,11 @@ CHANGELOG
   now. DESTDIR now follows the standard (from
   https://www.gnu.org/prep/standards/html_node/DESTDIR.html ).
   My thanks to https://github.com/rikardfalkeborn for these fixes.
+
+1.7 (2014-05-24)
+  Fixed problem with installation not work on systems where
+  'pkg-control --variable=libdir lxpanel' returns something. I'm not
+  sure what this returns exactly so we search for a builtin-plugin in
+  what is returned. From the autotools of the lxpanel example plugin
+  it looks like it returns e.g. '/usr/lib/lxpanel', but on a Arch
+  linux system it returns '/usr/lib/'.

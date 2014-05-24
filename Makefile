@@ -1,4 +1,4 @@
-VERSION=1.5
+VERSION=1.7
 NAME=sensors-lxpanel-plugin
 INPUT=sensors.c
 OUTPUT=sensors.so

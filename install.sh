@@ -45,11 +45,20 @@ check_results() {
 }
 
 find_install_path() {
-    PLUGINS_PATH=`pkg-config --variable=libdir lxpanel`/plugins
+    LXPANEL_LIBDIR=`pkg-config --variable=libdir lxpanel`
+    # not sure if this returns /lib/lxpanel/plugins, /lib or /lib/lxpanel
+    # so we search for builtin plugin in what we get out
     if [ $? -eq 0 ]
     then
-        echo $PLUGINS_PATH
-        exit 0
+        OUT=$(check_results $(find "$LXPANEL_LIBDIR" \
+                                   -name $EXISTING_LXPANEL_PLUGIN \
+                                   2> /dev/null))
+        ERRCODE=$?
+        if [ ! $ERRCODE -eq 2 ]
+        then
+            echo "${OUT}"
+            exit $ERRCODE
+        fi
     fi
     
     OUT=$(check_results $(locate $EXISTING_LXPANEL_PLUGIN))
