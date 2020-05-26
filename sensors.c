@@ -56,6 +56,7 @@ typedef struct {
   char *format_normal_str, *format_warning_str, *format_critical_str;
   char *format_normal_str_shown, *format_warning_str_shown, 
     *format_critical_str_shown;
+  char *number_format_override;
   char *delay_in_ms_str;
   int delay_in_ms;
   unsigned int timer;
@@ -178,6 +179,9 @@ static char* sensor_reading(const sensors_chip_name *chip,
     goto end_of_func;
   }
 
+  char override_format = NULL != sp
+      && NULL != sp->number_format_override
+      && 0 != strlen(sp->number_format_override);
   const sensors_subfeature *sf;
   double temp, max, crit, rpm, volt, min;
   switch (feature->type) {
@@ -198,13 +202,19 @@ static char* sensor_reading(const sensors_chip_name *chip,
     if (sp != NULL) {
       format = (((!isnan(max) && volt >= max) || (!isnan(min) && volt <= min)) 
                ? sp->format_normal_str_shown : sp->format_critical_str_shown);
-      sprintf(out, "%.2lf%s", volt, (sp->hide_unit ? "" : " V"));
+      sprintf(out,
+              override_format ? sp->number_format_override : "%.2lf%s",
+              volt, (sp->hide_unit ? "" : " V"));
     } else {
-      sprintf(out, "%.2lf V", volt);
+      sprintf(out,
+              override_format ? sp->number_format_override : "%.2lf V",
+              volt);
       if ((!isnan(max) && volt >= max) ||
           (!isnan(min) && volt <= min)) {
         strcpy(out0, out);
-        sprintf(out, "! %s !", out0);
+        sprintf(out,
+                override_format ? sp->number_format_override : "! %s !",
+                out0);
       }
     }
     break;
@@ -230,17 +240,24 @@ static char* sensor_reading(const sensors_chip_name *chip,
       else if (!isnan(max) && temp >= max)
         format = sp->format_warning_str_shown;
 
-      sprintf(out, "%.1lf%s", 
+      sprintf(out,
+              override_format ? sp->number_format_override : "%.1lf%s", 
               (sp->in_fahrenheit ? deg_ctof(temp) : temp),
               (sp->hide_unit ? "" : (sp->in_fahrenheit ? "°F" : "°C")));
     } else {
-      sprintf(out, "%.1lf°C", temp);
+      sprintf(out,
+              override_format ? sp->number_format_override : "%.1lf°C",
+              temp);
       if (!isnan(crit) && temp >= crit) {
         strcpy(out0, out);
-        sprintf(out, "!!! %s !!!", out0);
+        sprintf(out,
+                override_format ? sp->number_format_override : "!!! %s !!!",
+                out0);
       } else if (!isnan(max) && temp >= max) {
         strcpy(out0, out);
-        sprintf(out, "! %s !", out);
+        sprintf(out,
+                override_format ? sp->number_format_override : "! %s !",
+                out);
       }
     }
     break;
@@ -256,9 +273,13 @@ static char* sensor_reading(const sensors_chip_name *chip,
     }
     if (sp != NULL) {
       format = sp->format_normal_str_shown;
-      sprintf(out, "%.0lf%s", rpm, (sp->hide_unit ? "" : " RPM"));
+      sprintf(out,
+              override_format ? sp->number_format_override : "%.0lf%s",
+              rpm, (sp->hide_unit ? "" : " RPM"));
     } else
-      sprintf(out, "%.0lf RPM", rpm);
+      sprintf(out,
+              override_format ? sp->number_format_override : "%.0lf RPM",
+              rpm);
     break;
 
   default:
@@ -271,7 +292,9 @@ static char* sensor_reading(const sensors_chip_name *chip,
         sensors_get_value(chip, sf->number, &val);
         if (out[0] != '\0')
           sprintf(out, "%s, ", out);
-        sprintf(out, "%s%s=%.2lf", out, subfeature_type_name(sf->type), val);
+        sprintf(out,
+                override_format ? sp->number_format_override : "%s%s=%.2lf",
+                out, subfeature_type_name(sf->type), val);
       }
     break;
   }
@@ -385,6 +408,8 @@ static int sensors_constructor(Plugin * p, char ** fp) {
           sp->format_critical_str = g_strdup(s.t[1]);
         else if (g_ascii_strcasecmp(s.t[0], "DelayInMs") == 0)
           sp->delay_in_ms = atoi(s.t[1]);
+        else if (g_ascii_strcasecmp(s.t[0], "NumberFormatOverrde") == 0)
+          sp->number_format_override = g_strdup(s.t[1]);
       }
     }
   }
@@ -441,6 +466,7 @@ static void sensors_destructor(Plugin * p) {
   g_free(sp->format_normal_str);
   g_free(sp->format_warning_str);
   g_free(sp->format_critical_str);
+  g_free(sp->number_format_override);
   free(sp->delay_in_ms_str);
   g_free(sp);
 
@@ -496,6 +522,7 @@ static void sensors_configure(Plugin * p, GtkWindow * parent) {
      _("Warning text"), &sp->format_warning_str, CONF_TYPE_STR,
      _("Critical text"), &sp->format_critical_str, CONF_TYPE_STR,
      _("Delay in ms"), &sp->delay_in_ms_str, CONF_TYPE_STR,
+     _("Number format override (%.2lf%s)"), &sp->number_format_override, CONF_TYPE_STR,
      NULL);
 
   GtkWidget * hbox = gtk_hbox_new(FALSE, 2);
@@ -543,6 +570,7 @@ static void sensors_save_configuration(Plugin * p, FILE * fp) {
   lxpanel_put_str(fp, "FormatWarning", sp->format_warning_str);
   lxpanel_put_str(fp, "FormatCritical", sp->format_critical_str);
   lxpanel_put_int(fp, "DelayInMs", sp->delay_in_ms);
+  lxpanel_put_str(fp, "NumberFormatOverrde", sp->number_format_override);
 }
 
 PluginClass sensors_plugin_class = {
