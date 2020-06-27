@@ -7,13 +7,13 @@ pkgcheck() {
   pkg-config --cflags $PKGNAME > /dev/null 2>&1
   if [ $? -eq 1 ] 
   then
-      echo missing $PKGNAME. sudo apt-get install $DEBIANPKG
+      echo missing $PKGNAME. sudo apt install $DEBIANPKG
       exit 1
   fi
 
 }
 
-pkgcheck glib-2.0 libglib-2.0-dev
+pkgcheck glib-2.0 libglib2.0-dev
 
 pkgcheck gtk+-2.0 libgtk2.0-dev
 

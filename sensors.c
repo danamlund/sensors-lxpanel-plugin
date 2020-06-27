@@ -212,7 +212,7 @@ static char* sensor_reading(const sensors_chip_name *chip,
       if ((!isnan(max) && volt >= max) ||
           (!isnan(min) && volt <= min)) {
         strcpy(out0, out);
-        sprintf(out,
+        snprintf(out, sizeof(out),
                 override_format ? sp->number_format_override : "! %s !",
                 out0);
       }
@@ -250,14 +250,14 @@ static char* sensor_reading(const sensors_chip_name *chip,
               temp);
       if (!isnan(crit) && temp >= crit) {
         strcpy(out0, out);
-        sprintf(out,
+        snprintf(out, sizeof(out),
                 override_format ? sp->number_format_override : "!!! %s !!!",
                 out0);
       } else if (!isnan(max) && temp >= max) {
         strcpy(out0, out);
-        sprintf(out,
+        snprintf(out, sizeof(out),
                 override_format ? sp->number_format_override : "! %s !",
-                out);
+                out0);
       }
     }
     break;
@@ -290,11 +290,14 @@ static char* sensor_reading(const sensors_chip_name *chip,
     while (NULL != (sf = sensors_get_all_subfeatures(chip, feature, &sfnr))) {
         val = NAN;
         sensors_get_value(chip, sf->number, &val);
-        if (out[0] != '\0')
-          sprintf(out, "%s, ", out);
-        sprintf(out,
+        if (out[0] != '\0') {
+            strcpy(out0, out);
+            snprintf(out, sizeof(out), "%s, ", out0);
+        }
+        strcpy(out0, out);
+        snprintf(out, sizeof(out),
                 override_format ? sp->number_format_override : "%s%s=%.2lf",
-                out, subfeature_type_name(sf->type), val);
+                out0, subfeature_type_name(sf->type), val);
       }
     break;
   }

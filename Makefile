@@ -10,6 +10,7 @@ ${OUTPUT}: ${INPUT}
 	gcc -O2 -Wall `pkg-config --cflags glib-2.0 gtk+-2.0` \
 	    -shared -fPIC ${INPUT} -lsensors -o ${OUTPUT} \
 	    `pkg-config --libs glib-2.0 gtk+-2.0`
+	@echo Created ${OUTPUT}
 
 clean:
 	rm -f ${OUTPUT}

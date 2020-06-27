@@ -25,6 +25,14 @@ For Fedora 16:
 INSTALLATION
 ============
 
+To install this package run on a fresh ubuntu 20.04 system:
+  sudo apt-get install gcc make libglib2.0-dev libgtk2.0-dev libsensors4-dev lm-sensors
+  make
+  sudo make install
+  lxpanelctl restart
+  "right-click panel -> Add / Remove Panel Items -> Add -> lm-sensors Monitor"
+
+
 To install this package run on a fresh ubuntu 11.04 system:
   sudo apt-get install build-essential lxde
   sudo apt-get install libglib2.0-dev libgtk2.0-dev libmenu-cache1-dev 
@@ -124,9 +132,14 @@ CHANGELOG
   My thanks to https://github.com/rikardfalkeborn for these fixes.
 
 1.7 (2014-05-24)
-  Fixed problem with installation not work on systems where
+  Fixed problem with installation not working on systems where
   'pkg-control --variable=libdir lxpanel' returns something. I'm not
   sure what this returns exactly so we search for a builtin-plugin in
   what is returned. From the autotools of the lxpanel example plugin
   it looks like it returns e.g. '/usr/lib/lxpanel', but on a Arch
   linux system it returns '/usr/lib/'.
+
+1.8 (2020-05-26)
+  Add parameter that lets you override how sensor numbers are
+  formattet. For example if you set it to "%.0lf%s", then temperatures
+  wont have any decimals.
