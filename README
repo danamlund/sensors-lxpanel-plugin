@@ -29,8 +29,6 @@ To install this package run on a fresh ubuntu 20.04 system:
   sudo apt install gcc make libglib2.0-dev libgtk2.0-dev libsensors4-dev lm-sensors
   make
   sudo make install
-  lxpanelctl restart
-  "right-click panel -> Add / Remove Panel Items -> Add -> lm-sensors Monitor"
 
 
 To install this package run on a fresh ubuntu 11.04 system:
@@ -50,14 +48,6 @@ To install in Arch Linux
   Available PKGBUILD in the AUR:
     https://aur.archlinux.org/packages/sensors-lxpanel-plugin
 
-To install in Funtoo/Gentoo:
-  Available in the Flora overlay repository or directly from:
-    https://github.com/funtoo/flora/tree/master/lxde-base/sensors-lxpanel-plugin
-
-To install in Fedora:
-  Available as an rpm from:
-    http://koji.russianfedora.ru/koji/packageinfo?packageID=332
-
 On debian (and possible other systems) the package 'lxpanel-dev' is
 also needed: 
   sudo apt-get install lxpanel-dev
@@ -71,6 +61,7 @@ USAGE
 =====
 
 Once installed, follow these steps to add the plugin:
+  Restart lxpanel (log out/in or run lxpanelctl restart)
   Right-click panel
   Select "Add / Remove Panel Items"
   Press "Add"
