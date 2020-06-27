@@ -10,7 +10,7 @@ DEPENDENCIES
 This package uses several other packages with different names
 depending on distribution.
 
-For Ubuntu 14.04:
+For Ubuntu 20.04:
   pkg-config
   libglib2.0-dev
   libgtk2.0-dev
