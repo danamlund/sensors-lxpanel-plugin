@@ -25,6 +25,13 @@ For Fedora 16:
 INSTALLATION
 ============
 
+
+To install this package run on a fresh ubuntu 22.04 system:
+  sudo apt install gcc make libglib2.0-dev libgtk2.0-dev libsensors4-dev lm-sensors lxpanel-dev plocate
+  make
+  sudo make install
+
+
 To install this package run on a fresh ubuntu 20.04 system:
   sudo apt install gcc make libglib2.0-dev libgtk2.0-dev libsensors4-dev lm-sensors
   make
