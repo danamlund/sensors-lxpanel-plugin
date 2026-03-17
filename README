@@ -141,3 +141,6 @@ CHANGELOG
   Add parameter that lets you override how sensor numbers are
   formattet. For example if you set it to "%.0lf%s", then temperatures
   wont have any decimals.
+
+1.9 (2026-03-17)
+  Fix crashes so it works on at least lxpanel 0.10.1.

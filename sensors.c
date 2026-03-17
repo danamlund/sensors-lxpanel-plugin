@@ -54,14 +54,13 @@ typedef struct {
   int chip_nr, feature_nr, in_fahrenheit, hide_unit;
   int max_display_length_seen;
   char *format_normal_str, *format_warning_str, *format_critical_str;
-  char *format_normal_str_shown, *format_warning_str_shown, 
-    *format_critical_str_shown;
+  char *format_normal_str_shown, *format_warning_str_shown, *format_critical_str_shown;
   char *number_format_override;
   char *delay_in_ms_str;
+  int sensor_index;
   int delay_in_ms;
   unsigned int timer;
   GtkWidget *label;
-  GtkComboBox *combo_box;
 } SensorsPlugin; 
 
 static int sensors_plugins_running = 0;
@@ -413,6 +412,8 @@ static int sensors_constructor(Plugin * p, char ** fp) {
           sp->delay_in_ms = atoi(s.t[1]);
         else if (g_ascii_strcasecmp(s.t[0], "NumberFormatOverrde") == 0)
           sp->number_format_override = g_strdup(s.t[1]);
+        else if (g_ascii_strcasecmp(s.t[0], "SensorIndex") == 0)
+          sp->sensor_index = atoi(s.t[1]);
       }
     }
   }
@@ -478,29 +479,6 @@ static void sensors_destructor(Plugin * p) {
     sensors_cleanup();
 }
 
-static void sensors_sensor_changed(GtkComboBox * cb, gpointer * data) {
-  Plugin *p = (Plugin *) data;
-  SensorsPlugin *sp = (SensorsPlugin *) p->priv;
-
-  const sensors_chip_name *chip;
-  const sensors_feature *feature;
-  int snr = 0, cnr = 0, fnr;
-
-  while (NULL != (chip = sensors_get_detected_chips(NULL, &cnr))) {
-    fnr = 0;
-    while (NULL != (feature = sensors_get_features(chip, &fnr))) {
-      if (snr == gtk_combo_box_get_active(sp->combo_box)) {
-        sp->chip_nr = cnr - 1;
-        sp->chip = chip;
-        sp->feature_nr = fnr - 1;
-        sp->feature = feature;
-        return;
-      }
-      snr++;
-    }
-  }
-}
-
 static void sensors_apply_configure(Plugin* p) {
   SensorsPlugin *sp = (SensorsPlugin *) p->priv;
 
@@ -508,14 +486,53 @@ static void sensors_apply_configure(Plugin* p) {
   sp->format_warning_str_shown = get_valid_format(sp->format_warning_str);
   sp->format_critical_str_shown = get_valid_format(sp->format_critical_str);
 
+  const sensors_chip_name *chip;
+  const sensors_feature *feature;
+  int snr = 0, cnr = 0, fnr;
+  while (NULL != (chip = sensors_get_detected_chips(NULL, &cnr))) {
+    fnr = 0;
+    while (NULL != (feature = sensors_get_features(chip, &fnr))) {
+      if (snr == sp->sensor_index) {
+        sp->chip_nr = cnr - 1;
+        sp->chip = chip;
+        sp->feature_nr = fnr - 1;
+        sp->feature = feature;
+      }
+      snr++;
+    }
+  }
+  
+
   update_timer(sp);
 }
 
 static void sensors_configure(Plugin * p, GtkWindow * parent) {
-  GtkWidget *dialog;
   SensorsPlugin *sp = (SensorsPlugin *) p->priv;
 
-  dialog = create_generic_config_dlg
+  char sensors_text[10000];
+  int sensors_text_i = 0;
+  sensors_text_i += sprintf(sensors_text + sensors_text_i, "Choose sensor index:\n");
+  
+  const sensors_chip_name *chip;
+  const sensors_feature *feature;
+  char *str;
+  int snr = 0, cnr = 0, fnr;
+  while (NULL != (chip = sensors_get_detected_chips(NULL, &cnr))) {
+    fnr = 0;
+    while (NULL != (feature = sensors_get_features(chip, &fnr))) {
+      str = get_sensor_string(chip, feature);
+      if (sensors_text_i + strlen(str) + 10 > sizeof(sensors_text)) {
+	  goto after;
+      }
+      sensors_text_i += sprintf(sensors_text + sensors_text_i, "%d: %s\n", snr, str);
+      free(str);
+      snr++;
+    }
+  }
+after:
+  sensors_text[sensors_text_i] = '\0';
+
+  create_generic_config_dlg
     (_(p->class->name),
      GTK_WIDGET(parent),
      (GSourceFunc) sensors_apply_configure, (gpointer) p,
@@ -526,38 +543,8 @@ static void sensors_configure(Plugin * p, GtkWindow * parent) {
      _("Critical text"), &sp->format_critical_str, CONF_TYPE_STR,
      _("Delay in ms"), &sp->delay_in_ms_str, CONF_TYPE_STR,
      _("Number format override (%.2lf%s)"), &sp->number_format_override, CONF_TYPE_STR,
+     sensors_text, &sp->sensor_index, CONF_TYPE_INT,
      NULL);
-
-  GtkWidget * hbox = gtk_hbox_new(FALSE, 2);
-  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), hbox);
-
-  GtkWidget * label = gtk_label_new("Sensor:");
-  gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, FALSE, 2 );
-
-  GtkWidget * combo = gtk_combo_box_new_text();
-  gtk_box_pack_start(GTK_BOX(hbox), combo, FALSE, TRUE, 2);
-  sp->combo_box = GTK_COMBO_BOX(combo);
-
-  const sensors_chip_name *chip;
-  const sensors_feature *feature;
-  char *str;
-  int snr = 0, cnr = 0, fnr;
-
-  while (NULL != (chip = sensors_get_detected_chips(NULL, &cnr))) {
-    fnr = 0;
-    while (NULL != (feature = sensors_get_features(chip, &fnr))) {
-      str = get_sensor_string(chip, feature);
-      gtk_combo_box_append_text(GTK_COMBO_BOX(combo), str);
-      free(str);
-      if (chip == sp->chip && feature == sp->feature) 
-        gtk_combo_box_set_active(GTK_COMBO_BOX(combo), snr);
-      snr++;
-    }
-  }
-  g_signal_connect(combo, "changed", G_CALLBACK(sensors_sensor_changed), p);
-
-  gtk_widget_show_all(dialog);
-  gtk_window_present(GTK_WINDOW(dialog));
 
   // reset text max-width
   gtk_widget_set_size_request(GTK_WIDGET(sp->label), -1, -1);
@@ -574,6 +561,7 @@ static void sensors_save_configuration(Plugin * p, FILE * fp) {
   lxpanel_put_str(fp, "FormatCritical", sp->format_critical_str);
   lxpanel_put_int(fp, "DelayInMs", sp->delay_in_ms);
   lxpanel_put_str(fp, "NumberFormatOverrde", sp->number_format_override);
+  lxpanel_put_int(fp, "SensorIndex", sp->sensor_index);
 }
 
 PluginClass sensors_plugin_class = {

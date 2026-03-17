@@ -61,14 +61,6 @@ find_install_path() {
         fi
     fi
     
-    OUT=$(check_results $(locate $EXISTING_LXPANEL_PLUGIN))
-    ERRCODE=$?
-    if [ ! $ERRCODE -eq 2 ]
-    then
-        echo "${OUT}"
-        exit $ERRCODE
-    fi
-
     for libdir in /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /usr
     do
         OUT=$(check_results $(find $libdir -name $EXISTING_LXPANEL_PLUGIN \
