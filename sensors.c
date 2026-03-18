@@ -509,10 +509,11 @@ static void sensors_apply_configure(Plugin* p) {
 static void sensors_configure(Plugin * p, GtkWindow * parent) {
   SensorsPlugin *sp = (SensorsPlugin *) p->priv;
 
-  char sensors_text[10000];
+  char *sensors_text;
+  int sensors_text_cap = 100;
+  sensors_text = malloc(sensors_text_cap);
   int sensors_text_i = 0;
   sensors_text_i += sprintf(sensors_text + sensors_text_i, "Choose sensor index:\n");
-  
   const sensors_chip_name *chip;
   const sensors_feature *feature;
   char *str;
@@ -521,17 +522,16 @@ static void sensors_configure(Plugin * p, GtkWindow * parent) {
     fnr = 0;
     while (NULL != (feature = sensors_get_features(chip, &fnr))) {
       str = get_sensor_string(chip, feature);
-      if (sensors_text_i + strlen(str) + 10 > sizeof(sensors_text)) {
-	  goto after;
+      while (sensors_text_i + strlen(str) + 10 > sensors_text_cap) {
+	  sensors_text_cap *= 2;
+	  sensors_text = realloc(sensors_text, sensors_text_cap);
       }
       sensors_text_i += sprintf(sensors_text + sensors_text_i, "%d: %s\n", snr, str);
       free(str);
       snr++;
     }
   }
-after:
-  sensors_text[sensors_text_i] = '\0';
-
+  
   create_generic_config_dlg
     (_(p->class->name),
      GTK_WIDGET(parent),
@@ -543,9 +543,10 @@ after:
      _("Critical text"), &sp->format_critical_str, CONF_TYPE_STR,
      _("Delay in ms"), &sp->delay_in_ms_str, CONF_TYPE_STR,
      _("Number format override (%.2lf%s)"), &sp->number_format_override, CONF_TYPE_STR,
-     sensors_text, &sp->sensor_index, CONF_TYPE_INT,
+     _(sensors_text), &sp->sensor_index, CONF_TYPE_INT,
      NULL);
-
+  free(sensors_text);
+  
   // reset text max-width
   gtk_widget_set_size_request(GTK_WIDGET(sp->label), -1, -1);
 }
