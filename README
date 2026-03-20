@@ -10,14 +10,15 @@ DEPENDENCIES
 This package uses several other packages with different names
 depending on distribution.
 
-For Ubuntu 20.04:
-  pkg-config
+For Ubuntu 22.04 or later, Debian 13 or later:
+  pkgconf
   libglib2.0-dev
   libgtk2.0-dev
-  libsensors4-dev
-  libmenu-cache1-dev
+  libsensors-dev
+  libmenu-cache-dev
+  lxpanel-dev
 
-For Fedora 16:
+For Fedora 16 or later:
   lm_sensors-devel
   gtk2-devel
 
@@ -26,38 +27,14 @@ INSTALLATION
 ============
 
 
-To install this package run on a fresh ubuntu 22.04 system:
-  sudo apt install gcc make libglib2.0-dev libgtk2.0-dev libsensors4-dev lm-sensors lxpanel-dev plocate
-  make
-  sudo make install
-
-
-To install this package run on a fresh ubuntu 20.04 system:
-  sudo apt install gcc make libglib2.0-dev libgtk2.0-dev libsensors4-dev lm-sensors
-  make
-  sudo make install
-
-
-To install this package run on a fresh ubuntu 11.04 system:
-  sudo apt-get install build-essential lxde
-  sudo apt-get install libglib2.0-dev libgtk2.0-dev libmenu-cache1-dev 
-  sudo apt-get install libsensors4-dev
-  make
-  sudo make install
-
-To install this package run on a fresh ubuntu 14.04 system:
-  sudo apt-get install libglib2.0-dev libgtk2.0-dev libmenu-cache1-dev 
-  sudo apt-get install libsensors4-dev
+To install this package run on a fresh Ubuntu or Debian system:
+  sudo apt install gcc make libglib2.0-dev libgtk2.0-dev libsensors-dev lm-sensors lxpanel-dev
   make
   sudo make install
 
 To install in Arch Linux
   Available PKGBUILD in the AUR:
     https://aur.archlinux.org/packages/sensors-lxpanel-plugin
-
-On debian (and possible other systems) the package 'lxpanel-dev' is
-also needed: 
-  sudo apt-get install lxpanel-dev
 
 Make sure you have run 'sudo sensors-detect' or otherwise configured
 lm-sensors. You can test your lm-sensors configuration by running
