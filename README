@@ -11,11 +11,11 @@ This package uses several other packages with different names
 depending on distribution.
 
 For Ubuntu 22.04 or later, Debian 13 or later:
-  pkg-config
+  pkgconf
   libglib2.0-dev
   libgtk2.0-dev
-  libsensors4-dev
-  libmenu-cache1-dev
+  libsensors-dev
+  libmenu-cache-dev
   lxpanel-dev
 
 For Fedora 16 or later:
@@ -28,7 +28,7 @@ INSTALLATION
 
 
 To install this package run on a fresh Ubuntu or Debian system:
-  sudo apt install gcc make libglib2.0-dev libgtk2.0-dev libsensors4-dev lm-sensors lxpanel-dev
+  sudo apt install gcc make libglib2.0-dev libgtk2.0-dev libsensors-dev lm-sensors lxpanel-dev
   make
   sudo make install
 
